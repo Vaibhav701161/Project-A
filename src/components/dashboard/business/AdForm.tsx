@@ -133,6 +133,8 @@ export function AdForm({ onSubmit, onClose }: AdFormProps) {
               <option value="lifestyle">Lifestyle</option>
               <option value="technology">Technology</option>
               <option value="fitness">Fitness</option>
+              <option value="fitness">Hostels</option>
+              
             </select>
           </div>
 
