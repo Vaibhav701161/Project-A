@@ -4,29 +4,18 @@ import { TeamMember } from './TeamMember';
 
 const teamMembers = [
   {
-    name: 'Sarah Johnson',
+    name: 'Aditi Kumari',
     role: 'Chief Executive Officer',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&h=300',
     Icon: Briefcase
   },
   {
-    name: 'Michael Chen',
+    name: 'Vaibhav Mittal',
     role: 'Chief Technology Officer',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&h=300',
     Icon: Code2
   },
-  {
-    name: 'Emily Rodriguez',
-    role: 'Head of Marketing',
-    image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&h=300',
-    Icon: LineChart
-  },
-  {
-    name: 'David Kim',
-    role: 'Community Manager',
-    image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=300&h=300',
-    Icon: Users
-  }
+
 ];
 
 export function Team() {
