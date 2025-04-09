@@ -3,21 +3,21 @@ import { Star } from 'lucide-react';
 
 const testimonials = [
   {
-    name: 'Sarah Johnson',
+    name: 'dibakar sinha',
     role: 'Local Restaurant Owner',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150',
     content: 'LocAD helped us connect with food bloggers in our area. Our weekend bookings increased by 40% after our first campaign!',
     rating: 5
   },
   {
-    name: 'Michael Chen',
+    name: 'Babita tiwari',
     role: 'Lifestyle Influencer',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150',
     content: 'The platform makes it easy to find and collaborate with local businesses. I love being able to support my community while growing my brand.',
     rating: 5
   },
   {
-    name: 'Emily Rodriguez',
+    name: 'Rashi khanna',
     role: 'Boutique Owner',
     image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&h=150',
     content: 'We have found amazing local fashion influencers through LocAD. The ROI on our campaigns has been incredible!',
