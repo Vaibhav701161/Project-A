@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, UserCircle, HelpCircle, LogOut, ChevronRight } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  Users, 
+  UserCircle, 
+  HelpCircle, 
+  LogOut, 
+  ChevronRight,
+  CreditCard,
+  DollarSign
+} from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { auth } from '../../lib/firebase';
 import { cn } from '../../lib/utils';
@@ -28,6 +37,16 @@ export function Sidebar() {
       path: userType === 'business' ? '/influencers' : '/advertisements',
       label: userType === 'business' ? 'Influencers' : 'Advertisements',
       icon: Users
+    },
+    {
+      path: '/payment-history',
+      label: 'Payment History',
+      icon: CreditCard
+    },
+    {
+      path: '/payment-test',
+      label: 'Test Payment',
+      icon: DollarSign
     },
     {
       path: '/profile',
