@@ -14,6 +14,7 @@ const functions = getFunctions();
 const createPaymentIntentFn = httpsCallable(functions, 'createPaymentIntent');
 const createPaymentMethodFn = httpsCallable(functions, 'createPaymentMethod');
 const processPaymentFn = httpsCallable(functions, 'processPayment');
+const getPaymentHistoryFn = httpsCallable(functions, 'getPaymentHistory');
 
 // Types for payment operations
 export interface PaymentIntent {
@@ -164,7 +165,7 @@ export const addPaymentMethod = async (
   }
 };
 
-// Get payment history for current user
+// Get payment history for current user using Cloud Function
 export const getPaymentHistory = async (): Promise<{
   success: boolean;
   history?: any[];
@@ -175,39 +176,42 @@ export const getPaymentHistory = async (): Promise<{
     const currentUser = auth.currentUser;
     
     if (!currentUser) {
+      // This check is still good practice client-side
       return { success: false, error: 'User not authenticated' };
     }
-    
-    // Get user type (business or influencer)
-    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-    const userType = userDoc.data()?.type;
-    
-    let paymentsQuery;
-    if (userType === 'business') {
-      paymentsQuery = query(
-        collection(db, 'paymentIntents'),
-        where('businessId', '==', currentUser.uid)
-      );
+
+    // Call the Cloud Function
+    const result = await getPaymentHistoryFn();
+    const data = result.data as any;
+
+    if (data.success) {
+      // Process dates if needed (Cloud Function already converts to ISO string)
+      const historyWithDates = data.history.map((item: any) => ({
+        ...item,
+        createdAt: item.createdAt ? new Date(item.createdAt) : null,
+        updatedAt: item.updatedAt ? new Date(item.updatedAt) : null,
+      }));
+      return { success: true, history: historyWithDates };
     } else {
-      paymentsQuery = query(
-        collection(db, 'paymentIntents'),
-        where('influencerId', '==', currentUser.uid)
-      );
+      // Provide a more specific error based on the code from the function
+      let errorMessage = data.error || 'Failed to load payment history.';
+      if (data.code === 'unauthenticated') {
+        errorMessage = 'You must be logged in to view payment history.';
+      } else if (data.code === 'not-found') {
+        errorMessage = 'User profile not found. Cannot fetch history.';
+      }
+      return { success: false, error: errorMessage };
     }
-    
-    const paymentsSnapshot = await getDocs(paymentsQuery);
-    const history: any[] = [];
-    
-    paymentsSnapshot.forEach(doc => {
-      history.push({ id: doc.id, ...doc.data() });
-    });
-    
-    return { success: true, history };
-  } catch (error) {
-    console.error('Error getting payment history:', error);
+  } catch (error: any) {
+    console.error('Error calling getPaymentHistory function:', error);
+    let errorMessage = 'An unexpected error occurred while fetching payment history.';
+    // Check for Firebase Functions specific errors
+    if (error.code === 'permission-denied' || error.code === 'unauthenticated') {
+      errorMessage = 'You do not have permission to access this resource.';
+    }
     return { 
       success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      error: errorMessage
     };
   }
 }; 
