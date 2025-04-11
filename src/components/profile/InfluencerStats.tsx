@@ -11,15 +11,17 @@ export function InfluencerStats() {
   const activeCollaborations = ads.filter(ad => ad.status === 'in_progress').length;
   const completedCollaborations = ads.filter(ad => ad.status === 'completed').length;
   
-  // Calculate estimated earnings (example calculation)
-  const estimatedEarnings = ads
-    .filter(ad => ad.status === 'completed')
+  // Calculate actual earnings from completed campaigns
+  const actualEarnings = ads
+    .filter(ad => ad.status === 'completed' && ad.paymentStatus === 'paid') // Ensure it's completed AND paid
     .reduce((sum, ad) => {
-      const budget = parseInt(ad.budget.replace(/[^0-9]/g, '')) || 0;
-      return sum + budget;
+      // Attempt to parse budget, default to 0 if invalid
+      const budgetValue = parseFloat(ad.budget?.replace(/[^\d.-]/g, '')) || 0;
+      return sum + budgetValue;
     }, 0);
 
   if (loading) {
+    // Show placeholders while loading
     return <div className="grid md:grid-cols-3 gap-6">
       {[...Array(3)].map((_, i) => (
         <div key={i} className="h-32 bg-gray-100 animate-pulse rounded-lg"></div>
@@ -28,24 +30,32 @@ export function InfluencerStats() {
   }
 
   return (
-    <div className="grid md:grid-cols-3 gap-6">
-      <StatCard
-        title="Total Earnings"
-        value={`$${estimatedEarnings}`}
-        icon={DollarSign}
-        trend="This month"
-      />
+    // Adjust grid columns based on whether earnings are shown
+    <div className={`grid gap-6 ${actualEarnings > 0 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
+      {/* Conditionally render Total Earnings card */}
+      {actualEarnings > 0 && (
+        <StatCard
+          title="Total Earnings"
+          value={`$${actualEarnings.toFixed(2)}`} // Format to 2 decimal places
+          icon={DollarSign}
+          trend="Lifetime earned"
+        />
+      )}
+      
+      {/* Active Collaborations card */}
       <StatCard
         title="Active Collaborations"
         value={activeCollaborations.toString()}
         icon={TrendingUp}
-        trend={`${appliedAds} pending`}
+        trend={`${appliedAds} pending applications`}
       />
+      
+      {/* Completed Projects card */}
       <StatCard
         title="Completed Projects"
         value={completedCollaborations.toString()}
         icon={Star}
-        trend={`${completedCollaborations} total`}
+        trend={`${completedCollaborations} total completed`}
       />
     </div>
   );
