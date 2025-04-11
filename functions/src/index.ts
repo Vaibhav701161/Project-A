@@ -292,6 +292,65 @@ export const processPayment = functions.https.onCall<ProcessPaymentRequest>({
   }
 });
 
+// Get payment history for the authenticated user
+export const getPaymentHistory = functions.https.onCall(async (data, context) => {
+  // Ensure user is authenticated
+  if (!context.auth) {
+    return { success: false, error: 'Unauthorized', code: 'unauthenticated' };
+  }
+
+  const userId = context.auth.uid;
+
+  try {
+    // Get user type from Firestore
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    if (!userDoc.exists) {
+      return { success: false, error: 'User profile not found', code: 'not-found' };
+    }
+    const userType = userDoc.data()?.type; // Assuming 'type' field stores 'business' or 'influencer'
+
+    if (!userType) {
+        return { success: false, error: 'User type not defined', code: 'internal' };
+    }
+
+    // Query payment intents based on user type
+    let paymentsQuery;
+    const paymentIntentsRef = admin.firestore().collection('paymentIntents');
+
+    if (userType === 'business') {
+      paymentsQuery = paymentIntentsRef.where('businessId', '==', userId).orderBy('createdAt', 'desc');
+    } else if (userType === 'influencer') {
+      paymentsQuery = paymentIntentsRef.where('influencerId', '==', userId).orderBy('createdAt', 'desc');
+    } else {
+      return { success: false, error: 'Invalid user type', code: 'internal' };
+    }
+
+    const paymentsSnapshot = await paymentsQuery.get();
+    const history: any[] = [];
+
+    paymentsSnapshot.forEach(doc => {
+      const docData = doc.data();
+      // Convert Firestore Timestamps to ISO strings or milliseconds for client compatibility
+      const processedData = {
+        ...docData,
+        createdAt: docData.createdAt?.toDate ? docData.createdAt.toDate().toISOString() : null,
+        updatedAt: docData.updatedAt?.toDate ? docData.updatedAt.toDate().toISOString() : null,
+      };
+      history.push({ id: doc.id, ...processedData });
+    });
+
+    return { success: true, history };
+
+  } catch (error) {
+    console.error('Error fetching payment history:', error);
+    return {
+      success: false,
+      error: 'An internal error occurred while fetching payment history.',
+      code: 'internal'
+    };
+  }
+});
+
 // Webhook handler for Stripe events
 export const stripeWebhook = functions.https.onRequest({
   cors: false,
