@@ -28,10 +28,10 @@ export function useAdvertisements() {
           where('businessId', '==', user.uid),
           orderBy('createdAt', 'desc')
         );
-      } else if (userType === 'influencer' && profileData?.location) {
+      } else if (userType === 'influencer' && profileData?.city) {
         q = query(
           collection(db, 'advertisements'),
-          where('location', '==', profileData.location),
+          where('city', '==', profileData.city),
           where('status', '==', 'active'),
           orderBy('createdAt', 'desc')
         );
@@ -58,7 +58,7 @@ export function useAdvertisements() {
       setError('Failed to load advertisements');
       setLoading(false);
     }
-  }, [user?.uid, userType, profileData?.location]);
+  }, [user?.uid, userType, profileData?.city]);
 
   useEffect(() => {
     const unsubscribe = fetchAds();
