@@ -19,7 +19,7 @@ export function AvailableAds() {
       <EmptyState
         icon={Megaphone}
         title="No opportunities available"
-        description="There are currently no advertising campaigns in your area. Check back soon for new opportunities!"
+        description="There are currently no advertising campaigns from businesses in your city. Check back soon for new local opportunities!"
       />
     );
   }
