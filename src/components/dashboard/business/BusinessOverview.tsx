@@ -1,4 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../../../lib/firebase';
+import { getAuth } from 'firebase/auth';
 import { TrendingUp, Users, Clock, CheckCircle } from 'lucide-react';
 import { StatCard } from '../common/StatCard';
 import { RecentCampaigns } from './RecentCampaigns';
@@ -8,19 +12,52 @@ import { createAdvertisement } from '../../../services/advertisements';
 import { useAuthStore } from '../../../store/authStore';
 import { useProfileData } from '../../../hooks/useProfileData';
 import { useAdvertisements } from '../../../hooks/useAdvertisements';
+import { CampaignsList } from './CampaignsList';
 
 export function BusinessOverview() {
+  const navigate = useNavigate();
   const [showAdForm, setShowAdForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const user = useAuthStore(state => state.user);
   const { profileData } = useProfileData();
   const { ads, loading, refetch } = useAdvertisements();
+  const [campaigns, setCampaigns] = useState<any[]>([]);
 
   // Calculate statistics
   const activeAds = ads.filter(ad => ad.status === 'active').length;
   const pendingRequests = ads.filter(ad => ad.status === 'pending').length;
   const completedAds = ads.filter(ad => ad.status === 'completed').length;
-  const totalInfluencers = ads.reduce((sum, ad) => sum + (ad.applications || 0), 0);
+  
+  // Use type assertion to fix the linter error since we know this property exists
+  const totalInfluencers = ads.reduce((sum, ad) => {
+    const applications = (ad as any).applications || 0;
+    return sum + applications;
+  }, 0);
+
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const auth = getAuth();
+        if (!auth.currentUser) {
+          return;
+        }
+        
+        const campaignsRef = collection(db, 'campaigns');
+        const campaignsSnapshot = await getDocs(campaignsRef);
+        
+        const campaignsList: any[] = [];
+        campaignsSnapshot.forEach((doc) => {
+          campaignsList.push({ id: doc.id, ...doc.data() });
+        });
+        
+        setCampaigns(campaignsList);
+      } catch (error) {
+        console.error('Error fetching campaigns:', error);
+      }
+    };
+    
+    fetchCampaigns();
+  }, []);
 
   const handleCreateAd = async (data: AdFormData) => {
     if (!user?.uid || !profileData?.address) {
@@ -87,6 +124,8 @@ export function BusinessOverview() {
       </div>
 
       <RecentCampaigns onCreateAd={() => setShowAdForm(true)} />
+      
+      <CampaignsList />
 
       {showAdForm && (
         <AdForm 
