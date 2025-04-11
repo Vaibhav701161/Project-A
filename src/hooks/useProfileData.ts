@@ -8,6 +8,7 @@ export interface ProfileData {
   name: string;
   email: string;
   location: string;
+  city?: string;
   createdAt: string;
   
   // Business specific fields
