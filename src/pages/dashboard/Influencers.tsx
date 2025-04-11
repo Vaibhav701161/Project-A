@@ -25,14 +25,14 @@ export function Influencers() {
   useEffect(() => {
     async function fetchInfluencers() {
       try {
-        if (!profileData?.address) {
+        if (!profileData?.city) {
           setLoading(false);
           return;
         }
 
         const q = query(
           collection(db, 'influencers'),
-          where('location', '==', profileData.address)
+          where('city', '==', profileData.city)
         );
         const querySnapshot = await getDocs(q);
         const influencerData = querySnapshot.docs.map(doc => ({
@@ -48,7 +48,7 @@ export function Influencers() {
     }
 
     fetchInfluencers();
-  }, [profileData?.address]);
+  }, [profileData?.city]);
 
   const filteredInfluencers = influencers.filter(influencer =>
     influencer.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,7 +67,7 @@ export function Influencers() {
     );
   }
 
-  if (!profileData?.address) {
+  if (!profileData?.city) {
     return (
       <EmptyState
         icon={MapPin}
@@ -82,7 +82,7 @@ export function Influencers() {
       <EmptyState
         icon={Users}
         title="No Influencers Found"
-        description={`There are currently no influencers in ${profileData.address}. Check back later as our community grows!`}
+        description={`There are currently no influencers in ${profileData.city}. Check back later as our community grows!`}
       />
     );
   }
