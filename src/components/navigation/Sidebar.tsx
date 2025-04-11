@@ -7,8 +7,7 @@ import {
   HelpCircle, 
   LogOut, 
   ChevronRight,
-  CreditCard,
-  DollarSign
+  CreditCard
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { auth } from '../../lib/firebase';
@@ -42,11 +41,6 @@ export function Sidebar() {
       path: '/payment-history',
       label: 'Payment History',
       icon: CreditCard
-    },
-    {
-      path: '/payment-test',
-      label: 'Test Payment',
-      icon: DollarSign
     },
     {
       path: '/profile',
