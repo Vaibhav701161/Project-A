@@ -24,8 +24,15 @@ export function BusinessOnboarding() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Extract city from address - assume it's after the last comma
+      const addressParts = formData.address.split(',');
+      const city = addressParts.length > 1 
+        ? addressParts[addressParts.length - 2].trim() 
+        : formData.address.trim();
+
       await setDoc(doc(db, 'businesses', user.uid), {
         ...formData,
+        city, // Store the extracted city
         userId: user.uid,
         createdAt: new Date().toISOString(),
         hasCompletedOnboarding: true
@@ -46,7 +53,7 @@ export function BusinessOnboarding() {
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Complete Your Business Profile</h1>
-          <p className="mt-2 text-gray-600">Let’s get your business set up on LocAD</p>
+          <p className="mt-2 text-gray-600">Let's get your business set up on LocAD</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
