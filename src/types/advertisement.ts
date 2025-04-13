@@ -8,7 +8,8 @@ export interface Advertisement {
   category: string;
   businessId: string;
   status: string;
-  location: string;
+  location: string; // Full address
+  city: string; // City only
   createdAt: any;
   businessName?: string;
   businessLogo?: string;
