@@ -18,6 +18,7 @@ export async function createAdvertisement(userId: string, data: AdFormData & { b
       businessId: userId,
       businessName: businessData.businessName,
       location: businessData.address, // Use business address as location
+      city: businessData.city, // Use business city
       status: 'active',
       createdAt: serverTimestamp(),
       applications: 0
