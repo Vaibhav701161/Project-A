@@ -35,8 +35,15 @@ export function InfluencerOnboarding() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Extract city from location - assume it's after the last comma
+      const locationParts = formData.location.split(',');
+      const city = locationParts.length > 1 
+        ? locationParts[locationParts.length - 2].trim() 
+        : formData.location.trim();
+
       await setDoc(doc(db, 'influencers', user.uid), {
         ...formData,
+        city, // Store the extracted city
         userId: user.uid,
         createdAt: new Date().toISOString(),
         hasCompletedOnboarding: true
@@ -62,7 +69,7 @@ export function InfluencerOnboarding() {
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-8 space-y-6">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">Create Your Influencer Profile</h1>
-          <p className="mt-2 text-gray-500">Let’s get you set up on LocAD</p>
+          <p className="mt-2 text-gray-500">Let's get you set up on LocAD</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
