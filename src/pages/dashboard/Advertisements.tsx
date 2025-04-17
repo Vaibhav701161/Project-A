@@ -6,17 +6,22 @@ import { EmptyState } from '../../components/dashboard/EmptyState';
 import { useProfileData } from '../../hooks/useProfileData';
 import { useAuthStore } from '../../store/authStore';
 
+// Define your API base URL - IMPORTANT: Use environment variables in a real app!
+// Example: const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'; 
+const API_BASE_URL = 'http://localhost:3001'; // Using a common default for now
+
 export function Advertisements() {
   const { ads, loading, error } = useAdvertisements();
   const { profileData } = useProfileData();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const userType = useAuthStore(state => state.userType);
+  const user = useAuthStore(state => state.user); // Get user for userId
   const [appliedAdsSet, setAppliedAdsSet] = useState<Set<string>>(new Set());
   const [applyingId, setApplyingId] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('[useEffect] appliedAdsSet state updated/changed:', appliedAdsSet);
+    // console.log('[useEffect] appliedAdsSet state updated/changed:', appliedAdsSet);
   }, [appliedAdsSet]);
 
   const filteredAds = ads.filter(ad => {
@@ -30,6 +35,14 @@ export function Advertisements() {
 
   const handleApply = async (adId: string) => {
     console.log(`[handleApply] Clicked for adId: ${adId}`);
+    const userId = user?.uid; // Get the current user's ID
+
+    if (!userId) {
+      console.error('[handleApply] User ID not found. Cannot apply.');
+      alert('Error: Could not identify user. Please try logging in again.');
+      return;
+    }
+
     if (appliedAdsSet.has(adId)) {
       console.log(`[handleApply] Already applied to ${adId}. Aborting.`);
       return;
@@ -43,16 +56,27 @@ export function Advertisements() {
     setApplyingId(adId);
 
     try {
-      console.log(`[handleApply] Making actual API call for: ${adId}`);
-      const response = await fetch('/api/apply', {
+      const applyUrl = `${API_BASE_URL}/api/apply`; // Construct full URL
+      console.log(`[handleApply] Making actual API call to: ${applyUrl} for adId: ${adId}, userId: ${userId}`);
+      
+      const response = await fetch(applyUrl, { // Use the full URL
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adId: adId }),
+        headers: { 
+          'Content-Type': 'application/json',
+          // Include Authorization header if your API requires it
+          // 'Authorization': `Bearer ${your_auth_token}` 
+        },
+        body: JSON.stringify({ adId: adId, userId: userId }), // Send adId and userId
       });
 
       console.log(`[handleApply] API response status for ${adId}: ${response.status}`);
       if (!response.ok) {
-        throw new Error(`API call failed with status: ${response.status}`);
+        // Provide more context for 404
+        if (response.status === 404) {
+          throw new Error(`API call failed: Endpoint ${applyUrl} not found (404).`);
+        } else {
+          throw new Error(`API call failed with status: ${response.status}`);
+        }
       }
       console.log(`[handleApply] API call successful for: ${adId}`);
 
@@ -67,11 +91,21 @@ export function Advertisements() {
       alert('Applied successfully!');
       
     } catch (err) {
-      console.error('[handleApply] Application error:', err);
-      const errorMessage = err instanceof Error && err.message.startsWith('API call failed')
-        ? `Failed to apply: ${err.message}`
-        : 'Failed to apply. Please check your connection and try again.';
-      alert(errorMessage);
+      // Log the full error object for more details
+      console.error('[handleApply] Full Application error object:', err);
+      
+      let errorMessage = 'An unknown error occurred.';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        // Specifically mention CORS if it looks like a network/fetch error without a specific status
+        if (err.name === 'TypeError' && errorMessage.includes('Failed to fetch')) {
+          errorMessage += ' (This might be a CORS issue or network problem. Check backend logs and CORS configuration.)';
+        }
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      alert(`Failed to apply: ${errorMessage}`); // Display the specific error
     } finally {
       console.log(`[handleApply] Resetting applyingId (was: ${applyingId})`);
       setApplyingId(null);
@@ -83,7 +117,8 @@ export function Advertisements() {
   }
 
   if (error) {
-    return <div className="p-6 text-red-600">{error}</div>;
+    // Display the error message from the hook
+    return <div className="p-6 text-red-600 font-semibold">Error: {error}</div>;
   }
 
   if (userType === 'influencer' && !profileData?.city) {
