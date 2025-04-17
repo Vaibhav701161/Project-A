@@ -17,14 +17,17 @@ export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const location = useLocation();
   const userType = useAuthStore((state) => state.userType);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
+const handleLogout = async () => {
+  try {
+    await auth.signOut();
+    setShowLogoutModal(false);
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
+};
+  
 
   const navItems = [
     {
@@ -116,22 +119,22 @@ export function Sidebar() {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          <button
-            onClick={handleLogout}
-            className={cn(
-              "flex items-center space-x-2 w-full p-3 text-gray-600",
-              "hover:bg-red-50 hover:text-red-600 rounded-lg transition-all duration-200",
-              "hover:scale-105 transform"
-            )}
-          >
-            <LogOut className="w-5 h-5 min-w-[1.25rem]" />
-            <span className={cn(
-              "transition-all duration-300",
-              isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
-            )}>
-              Logout
-            </span>
-          </button>
+        <button
+          onClick={() => setShowLogoutModal(true)}
+          className={cn(
+            "flex items-center space-x-2 w-full p-3 text-gray-600",
+            "hover:bg-red-50 hover:text-red-600 rounded-lg transition-all duration-200",
+            "hover:scale-105 transform"
+          )}
+        >
+          <LogOut className="w-5 h-5 min-w-[1.25rem]" />
+          <span className={cn(
+            "transition-all duration-300",
+            isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+          )}>
+            Logout
+          </span>
+        </button>
         </div>
       </aside>
 
@@ -140,6 +143,28 @@ export function Sidebar() {
         "transition-all duration-300 ease-in-out",
         isExpanded ? "ml-64" : "ml-16"
       )} />
+            {showLogoutModal && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full text-center">
+            <h2 className="text-lg font-semibold mb-4">Confirm Logout</h2>
+            <p className="text-gray-600 mb-6">Are you sure you want to logout?</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600 transition"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
